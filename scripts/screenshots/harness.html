@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lurkbox Decky panel</title>
+<style>
+  /* A look-alike of the Steam Quick Access menu at 1280x800 (Steam Deck / Game Mode), drawn from scratch. */
+  :root { --qam-bg: #0e141b; --qam-panel: #1a1f27; --row-focus: #3d4450; --btn: #3d4450; --btn-hover: #4d5562; --fg: #dcdedf; --dim: #8b929a; --accent: #1a9fff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: "Noto Sans", "DejaVu Sans", sans-serif; color: var(--fg); -webkit-font-smoothing: antialiased; }
+  body { background: radial-gradient(ellipse at 20% 30%, #23545a 0%, #0b2226 45%, #061214 100%); overflow: hidden; }
+  body.mode-toast { background: radial-gradient(ellipse at 30% 40%, #2d5a5e 0%, #123236 60%, #0b2226 100%); }
+  #root { height: 100%; }
+  .qam { position: absolute; top: 0; right: 0; bottom: 0; width: 100%; display: flex; background: var(--qam-bg); box-shadow: -8px 0 32px rgba(0,0,0,.55); }
+  .qam-content { flex: 1; min-width: 0; display: flex; flex-direction: column; background: linear-gradient(180deg, #1e232c 0%, #14181e 100%); }
+  .qam-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px 10px; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .qam-back { font-size: 20px; color: var(--dim); }
+  .qam-plugin-title { font-size: 18px; font-weight: 700; letter-spacing: .02em; }
+  .qam-scroll { overflow: hidden; padding-bottom: 16px; }
+  .qam-tabs { width: 56px; flex: none; background: #0b0f14; display: flex; flex-direction: column; align-items: center; padding-top: 14px; gap: 6px; }
+  .qam-tab { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 4px; color: var(--dim); font-size: 18px; }
+  .qam-tab.on { background: var(--row-focus); color: #fff; }
+  .qam-section { padding: 10px 0 2px; }
+  .qam-section-title { padding: 6px 16px 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--dim); }
+  .qam-row { padding: 0; }
+  .qam-field { padding: 8px 16px; }
+  .qam-inline { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+  .qam-label-col { min-width: 0; flex: 1; }
+  .qam-label { font-size: 14px; margin-bottom: 4px; }
+  .qam-inline .qam-label { margin: 0; }
+  .qam-desc { font-size: 12px; color: var(--dim); margin-top: 4px; line-height: 1.35; }
+  .qam-button { width: 100%; border: 0; border-radius: 2px; padding: 9px 12px; background: var(--btn); color: var(--fg); font: inherit; font-size: 14px; font-weight: 600; }
+  .qam-dropdown { display: flex; justify-content: space-between; align-items: center; background: var(--btn); border-radius: 2px; padding: 8px 12px; font-size: 13px; }
+  .qam-dropdown span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qam-dropdown .chev { color: var(--dim); margin-left: 8px; }
+  .qam-toggle { flex: none; width: 42px; height: 22px; border-radius: 11px; background: #555d68; position: relative; }
+  .qam-toggle .knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #c8ccd0; }
+  .qam-toggle.on { background: var(--accent); }
+  .qam-toggle.on .knob { left: 22px; background: #fff; }
+  .qam-input { width: 100%; background: #0b0f14; border: 1px solid #3d4450; color: var(--fg); padding: 6px 8px; border-radius: 2px; }
+  .gp-focus, .qam-field.hl.gp-focus { background: var(--row-focus); box-shadow: inset 3px 0 0 #fff; }
+  .toasts { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+  .toast { width: 100%; display: flex; gap: 12px; padding: 12px; border-radius: 6px; background: linear-gradient(135deg, #2a3140, #1b2029); box-shadow: 0 10px 28px rgba(0,0,0,.6); }
+  .toast-logo { width: 60px; height: 60px; flex: none; border-radius: 50%; overflow: hidden; background: #0b0f14; }
+  .toast-text { min-width: 0; }
+  .toast-app { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--dim); display: flex; align-items: center; gap: 6px; }
+  .toast-icon { display: inline-grid; }
+  .toast-title { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  .toast-body { font-size: 13px; color: #b8bcbf; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="harness.bundle.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "Lurkbox",
+  "version": "0.1.0",
+  "author": "aronwk-aaron",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": [
+      "notifications",
+      "streaming"
+    ],
+    "description": "Go-live notifications for the Twitch channels you follow, even while a game is running. Opens the channel in Lurkbox.",
+    "image": ""
+  }
+}
