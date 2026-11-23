@@ -202,22 +202,57 @@ class Backoff:
 # ---------------------------------------------------------------- which channels notify
 
 
+FLATPAK_ID = "io.github.lurkbox.Lurkbox"
+
+
+def lurkbox_dirs(home):
+    """Lurkbox's profile dirs: the AppImage's ~/.config/Lurkbox, then the Flatpak's ~/.var/app/<id>/config/Lurkbox."""
+    return [os.path.join(home, ".config", "Lurkbox"), os.path.join(home, ".var", "app", FLATPAK_ID, "config", "Lurkbox")]
+
+
+def pick_lurkbox_dir(dirs):
+    """The profile in use: the one with the newest notify-channels.json, else the first that exists, else the first."""
+    best, best_m = None, None
+    for d in dirs:
+        try:
+            m = os.stat(os.path.join(d, "notify-channels.json")).st_mtime
+        except OSError:
+            continue
+        if best_m is None or m > best_m:
+            best, best_m = d, m
+    if best is not None:
+        return best
+    for d in dirs:
+        if os.path.isdir(d):
+            return d
+    return dirs[0]
+
+
 class BellExport:
-    """Lurkbox's ~/.config/Lurkbox/notify-channels.json (src/main/notify-export.js)."""
+    """Lurkbox's notify-channels.json (src/main/notify-export.js). path: a path, or a function returning the current
+    one (pick_lurkbox_dir: the AppImage's or the Flatpak's profile)."""
 
     def __init__(self, path):
-        self.path = path
+        self._path = path
         self.mtime = None
         self.data = None
+        self.loaded_from = None
+
+    @property
+    def path(self):
+        return self._path() if callable(self._path) else self._path
 
     def load(self):
+        p = self.path
+        if p != self.loaded_from:
+            self.mtime, self.data, self.loaded_from = None, None, p
         try:
-            m = os.stat(self.path).st_mtime
+            m = os.stat(p).st_mtime
         except OSError:
             self.mtime, self.data = None, None
             return None
         if m != self.mtime:
-            d = read_json(self.path, None)
+            d = read_json(p, None)
             self.data = d if isinstance(d, dict) and isinstance(d.get("channels"), list) else None
             self.mtime = m
         return self.data

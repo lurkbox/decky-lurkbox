@@ -153,6 +153,42 @@ class BellExportTests(unittest.TestCase):
         self.assertIsNone(core.BellExport(p).for_user("42"))
 
 
+class ProfileDirTests(unittest.TestCase):
+    """The AppImage's ~/.config/Lurkbox or the Flatpak's ~/.var/app/<id>/config/Lurkbox."""
+
+    def test_dirs_and_pick(self):
+        home = tempfile.mkdtemp()
+        dirs = core.lurkbox_dirs(home)
+        self.assertEqual(dirs, [os.path.join(home, ".config", "Lurkbox"), os.path.join(home, ".var", "app", "io.github.lurkbox.Lurkbox", "config", "Lurkbox")])
+        self.assertEqual(core.pick_lurkbox_dir(dirs), dirs[0], "neither exists: the AppImage's")
+        os.makedirs(dirs[1])
+        self.assertEqual(core.pick_lurkbox_dir(dirs), dirs[1], "only the Flatpak's exists")
+        os.makedirs(dirs[0])
+        self.assertEqual(core.pick_lurkbox_dir(dirs), dirs[0], "both, no export: the AppImage's")
+        for i, t in ((0, 1000), (1, 2000)):
+            p = os.path.join(dirs[i], "notify-channels.json")
+            with open(p, "w") as f:
+                json.dump({"user_id": str(i), "channels": []}, f)
+            os.utime(p, (t, t))
+        self.assertEqual(core.pick_lurkbox_dir(dirs), dirs[1], "the newest export wins")
+
+    def test_bell_follows_the_picked_profile(self):
+        home = tempfile.mkdtemp()
+        dirs = core.lurkbox_dirs(home)
+        for d in dirs:
+            os.makedirs(d)
+        b = core.BellExport(lambda: os.path.join(core.pick_lurkbox_dir(dirs), "notify-channels.json"))
+        flat = os.path.join(dirs[1], "notify-channels.json")
+        with open(flat, "w") as f:
+            json.dump({"user_id": "42", "channels": [{"id": "1", "login": "a", "notify": False}]}, f)
+        self.assertEqual(b.for_user("42"), {"1": False})
+        app = os.path.join(dirs[0], "notify-channels.json")
+        with open(app, "w") as f:
+            json.dump({"user_id": "42", "channels": [{"id": "1", "login": "a", "notify": True}]}, f)
+        os.utime(flat, (1000, 1000))
+        self.assertEqual(b.for_user("42"), {"1": True})
+
+
 class OpenRequestTests(unittest.TestCase):
     def test_writes_fresh_request_0600(self):
         d = os.path.join(tempfile.mkdtemp(), "Lurkbox")
