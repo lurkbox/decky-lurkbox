@@ -1,6 +1,6 @@
 {
   "name": "lurkbox-decky",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Go-live notifications for the channels you follow, from the Lurkbox Decky companion",
   "type": "module",
   "private": true,

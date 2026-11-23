@@ -22,7 +22,7 @@ log = decky.logger
 
 
 def _owner():
-    """(uid, gid) of the Steam user when the backend runs as root, so files in ~/.config/Lurkbox stay theirs."""
+    """(uid, gid) of the Steam user when the backend runs as root, so files in Lurkbox's profile stay theirs."""
     if os.geteuid() != 0:
         return None
     try:
@@ -59,7 +59,8 @@ class Plugin:
         try:
             self.settings_dir = decky.DECKY_PLUGIN_SETTINGS_DIR
             os.makedirs(self.settings_dir, exist_ok=True)
-            self.lurkbox_dir = os.path.join(decky.DECKY_USER_HOME, ".config", "Lurkbox")
+            # The AppImage's profile or the Flatpak's, whichever Lurkbox wrote the bell export to last.
+            self.lurkbox_dirs = core.lurkbox_dirs(decky.DECKY_USER_HOME)
             self.owner = _owner()
             st = core.JsonStore(os.path.join(self.settings_dir, "settings.json"), core.DEFAULT_SETTINGS)
             st.data = core.sanitize_settings(st.data)
@@ -68,7 +69,7 @@ class Plugin:
             if os.path.exists(self.tokens.path):
                 os.chmod(self.tokens.path, 0o600)
             self.twitch = core.Twitch(self.tokens, run=_to_thread, log=lambda m: log.info("[twitch] %s", m))
-            self.bell = core.BellExport(os.path.join(self.lurkbox_dir, "notify-channels.json"))
+            self.bell = core.BellExport(lambda: os.path.join(core.pick_lurkbox_dir(self.lurkbox_dirs), "notify-channels.json"))
             self.engine = core.Engine(self.twitch, self.settings, self.bell, self._emit_live, log=lambda m: log.info("[poll] %s", m))
             self.device = None
             self.device_error = ""
@@ -297,7 +298,7 @@ class Plugin:
 
     @_safe
     async def open_channel(self, login, name=""):
-        path = core.write_open_request(self.lurkbox_dir, str(login or ""), name, owner=self.owner)
+        path = core.write_open_request(core.pick_lurkbox_dir(self.lurkbox_dirs), str(login or ""), name, owner=self.owner)
         log.info("open request for %s written", login)
         return {"ok": True, "path": path}
 

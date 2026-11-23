@@ -59,7 +59,7 @@ Open the Quick Access menu → Decky → **Lurkbox** → **Sign in with Twitch**
 
 On twitch.tv, each channel you follow has a notification bell. Twitch's public API (Helix) doesn't say which bells are on, so the Lurkbox app reads them and shares them with the plugin:
 
-- While Lurkbox is signed in to twitch.tv (its normal sign-in), it reads the bell setting of each follow every 10 minutes and writes `$HOME/.config/Lurkbox/notify-channels.json` (`{updated_at, user_id, channels: [{id, login, notify}]}`).
+- While Lurkbox is signed in to twitch.tv (its normal sign-in), it reads the bell setting of each follow every 10 minutes and writes `$HOME/.config/Lurkbox/notify-channels.json` (`{updated_at, user_id, channels: [{id, login, notify}]}`). The Flatpak keeps its profile in `$HOME/.var/app/io.github.lurkbox.Lurkbox/config/Lurkbox/` instead; the plugin checks both and uses the one with the newer `notify-channels.json` (the AppImage's when neither has one).
 - **This uses Twitch's unofficial web GQL API** (the API twitch.tv itself uses), through the Lurkbox app. The plugin itself only uses the official Helix API.
 - The plugin uses the file only when it belongs to the same Twitch account the plugin is signed in with.
 - **Lurkbox must have been run and signed in at least once.** Until the file exists (or when it belongs to another account), the plugin notifies for all followed channels and says so in the panel.
@@ -76,7 +76,7 @@ Under **Channels → Choose channels…**, each follow has a switch. Turning a c
 - The backend (`main.py`, logic in `py_modules/lurkbox_core.py`) polls `GET /helix/streams/followed` at the chosen interval and compares it with the previous result. A channel that wasn't live before is announced once per stream: the same stream id never notifies twice.
 - The first check after Decky starts (or after you sign in) only records who is already live, so you don't get a burst of notifications at boot.
 - After a 429 (rate limit) it waits until Twitch's reset time; after network or server errors it doubles the wait, up to 15 minutes. An expired token is refreshed once; if that fails, the panel asks you to sign in again.
-- **Opening a channel:** the backend writes `$HOME/.config/Lurkbox/open-request.json` (`{channel, name, at}`), and the frontend starts the Lurkbox shortcut with `SteamClient.Apps.RunGame`. It finds the shortcut by its name, **Lurkbox**, in your Steam library. Lurkbox reads the request at startup and while running, and opens the channel if the request is under 2 minutes old.
+- **Opening a channel:** the backend writes `open-request.json` into the same profile (`$HOME/.config/Lurkbox/` or the Flatpak's) (`{channel, name, at}`), and the frontend starts the Lurkbox shortcut with `SteamClient.Apps.RunGame`. It finds the shortcut by its name, **Lurkbox**, in your Steam library. Lurkbox reads the request at startup and while running, and opens the channel if the request is under 2 minutes old.
 - Every backend call catches its own errors and logs them to Decky's plugin log (`$DECKY_PLUGIN_LOG_DIR`), so a failure never takes Decky down.
 
 ## Building
