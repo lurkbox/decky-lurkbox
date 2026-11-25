@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FaTv } from "react-icons/fa";
 import { QrCode } from "./qr";
 import { QuietMode, allowedNow, launchLurkbox } from "./lurkbox";
+import { muteToast, uninstallToastMute } from "./toast-sound";
 
 // ---------------------------------------------------------------- backend calls (main.py)
 
@@ -138,15 +139,15 @@ async function onLive(ev: LiveEvent) {
       if (!s.enabled) return;
       if (!allowedNow(s.quiet)) return;
     }
-    toaster.toast({
+    const toast = {
       title: `${ev.name || ev.login} is live`,
       body: toastBody(ev),
       logo: ev.avatar ? <img src={ev.avatar} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /> : undefined,
       icon: <FaTv />,
       duration: 8000,
-      playSound: s ? s.sound !== false : true,
       onClick: () => { void openChannel(ev.login, ev.name); },
-    });
+    };
+    toaster.toast(s && s.sound === false ? muteToast(toast) : toast);
     void refreshState();
   } catch (e) {
     console.error("[Lurkbox] toast failed", e);
@@ -473,6 +474,7 @@ export default definePlugin(() => {
     onDismount() {
       removeEventListener("lurkbox_live", liveListener);
       removeEventListener("lurkbox_state", stateListener);
+      uninstallToastMute();
     },
   };
 });
