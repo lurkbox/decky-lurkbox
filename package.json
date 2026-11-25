@@ -1,6 +1,6 @@
 {
   "name": "lurkbox-decky",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Go-live notifications for the channels you follow, from the Lurkbox Decky companion",
   "type": "module",
   "private": true,
@@ -9,6 +9,7 @@
     "watch": "rollup -c -w",
     "typecheck": "tsc --noEmit",
     "test": "python3 -m unittest discover -s tests -v",
+    "test:ui": "node --experimental-strip-types --test tests/*.test.mjs",
     "package": "sh package.sh",
     "screenshots": "node scripts/screenshots.mjs"
   },
