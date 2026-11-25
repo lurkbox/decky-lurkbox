@@ -52,7 +52,7 @@ window.__fakeLive = LIVE[0];
 
 const state = {
   ok: true, signed_in: true, login: 'lurker', user_id: '1000001', signed_out_reason: '', device: null, device_error: '',
-  settings: { enabled: true, interval: 60, source: 'bell', quiet: 'always', sound: true, overrides: {} },
+  settings: { enabled: true, interval: 60, source: 'bell', quiet: 'always', sound: 'steam', overrides: {} },
   live: LIVE, last_error: '', last_poll: NOW / 1000 - 20,
   bell: { available: true, matches: true, updated_at: new Date(NOW - 12 * 60000).toISOString(), count: 32, on: 21, login: 'lurker' },
 };
