@@ -15,7 +15,7 @@ The screenshots use made-up channels; the panel frame is a look-alike of Steam's
 
 ## What it does
 
-- **Go-live notifications** through Steam's own notification toasts. Each one shows "*Name* is live", the game and the stream title, and the channel's avatar. The sound is Steam's own, and **Notification sound** in the panel turns it off for these notifications only.
+- **Go-live notifications** through Steam's own notification toasts. Each one shows "*Name* is live", the game and the stream title, and the channel's avatar. **Notification sound** in the panel picks Steam's sound (default), Lurkbox's own chime, both or none, for these notifications only.
 - **Opens the channel in Lurkbox.** Selecting a notification, or a channel under "Live now", starts Lurkbox on that channel. If Lurkbox is already running, it switches to that channel.
 - **Quick Access panel** with:
   - your sign-in;

@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FaTv } from "react-icons/fa";
 import { QrCode } from "./qr";
 import { QuietMode, allowedNow, launchLurkbox } from "./lurkbox";
+import { closeChime, playChime } from "./chime";
 import { muteToast, uninstallToastMute } from "./toast-sound";
 
 // ---------------------------------------------------------------- backend calls (main.py)
@@ -32,13 +33,14 @@ interface LiveEvent {
 }
 
 type Source = "bell" | "all" | "list";
+type SoundMode = "steam" | "lurkbox" | "both" | "none";
 
 interface Settings {
   enabled: boolean;
   interval: number;
   source: Source;
   quiet: QuietMode;
-  sound: boolean;
+  sound: SoundMode;
   overrides: Record<string, { login: string; mode: "mute" | "force" }>;
 }
 
@@ -134,7 +136,7 @@ function toastBody(ev: LiveEvent): string {
 
 async function onLive(ev: LiveEvent) {
   try {
-    const s = current?.settings ?? (await refreshState())?.settings;
+    const s = (await refreshState())?.settings; // fresh: the cached copy may predate a settings change
     if (!ev.test && s) {
       if (!s.enabled) return;
       if (!allowedNow(s.quiet)) return;
@@ -147,8 +149,9 @@ async function onLive(ev: LiveEvent) {
       duration: 8000,
       onClick: () => { void openChannel(ev.login, ev.name); },
     };
-    toaster.toast(s && s.sound === false ? muteToast(toast) : toast);
-    void refreshState();
+    const sound: SoundMode = s?.sound ?? "steam";
+    toaster.toast(sound === "lurkbox" || sound === "none" ? muteToast(toast) : toast);
+    if (sound === "lurkbox" || sound === "both") void playChime();
   } catch (e) {
     console.error("[Lurkbox] toast failed", e);
   }
@@ -370,6 +373,13 @@ const SOURCE_OPTIONS = [
   { data: "all", label: "All followed channels" },
   { data: "list", label: "Only my list" },
 ];
+const SOUND_OPTIONS = [
+  { data: "steam", label: "Steam" },
+  { data: "lurkbox", label: "Lurkbox" },
+  { data: "both", label: "Both" },
+  { data: "none", label: "None" },
+];
+
 const QUIET_OPTIONS = [
   { data: "always", label: "Always notify" },
   { data: "unless_lurkbox", label: "Not while Lurkbox is in front" },
@@ -405,7 +415,12 @@ function SettingsPanel({ s }: { s: State }) {
         />
       </PanelSectionRow>
       <PanelSectionRow>
-        <ToggleField label="Notification sound" checked={s.settings.sound !== false} onChange={(v) => { void set({ sound: v }); }} />
+        <DropdownItem
+          label="Notification sound"
+          rgOptions={SOUND_OPTIONS}
+          selectedOption={s.settings.sound}
+          onChange={(o) => { void set({ sound: o.data as SoundMode }); }}
+        />
       </PanelSectionRow>
       <PanelSectionRow>
         <DropdownItem
@@ -475,6 +490,7 @@ export default definePlugin(() => {
       removeEventListener("lurkbox_live", liveListener);
       removeEventListener("lurkbox_state", stateListener);
       uninstallToastMute();
+      closeChime();
     },
   };
 });

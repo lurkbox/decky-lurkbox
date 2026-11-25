@@ -377,7 +377,10 @@ if __name__ == "__main__":
 
 
 class SoundSettingTest(unittest.TestCase):
-    def test_sound_defaults_on_and_accepts_bools_only(self):
-        self.assertTrue(core.sanitize_settings({})["sound"])
-        self.assertFalse(core.sanitize_settings({"sound": False})["sound"])
-        self.assertTrue(core.sanitize_settings({"sound": "no"})["sound"])
+    def test_sound_modes_and_the_old_switch(self):
+        self.assertEqual(core.sanitize_settings({})["sound"], "steam")
+        self.assertEqual(core.sanitize_settings({"sound": True})["sound"], "steam")
+        self.assertEqual(core.sanitize_settings({"sound": False})["sound"], "none")
+        self.assertEqual(core.sanitize_settings({"sound": "loud"})["sound"], "steam")
+        for m in ("steam", "lurkbox", "both", "none"):
+            self.assertEqual(core.sanitize_settings({"sound": m})["sound"], m)

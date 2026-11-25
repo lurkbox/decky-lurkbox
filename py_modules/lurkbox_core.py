@@ -29,13 +29,14 @@ HELIX = "https://api.twitch.tv/helix"
 
 INTERVALS = (30, 60, 120)
 SOURCES = ("bell", "all", "list")
+SOUND_MODES = ("steam", "lurkbox", "both", "none")
 QUIET_MODES = ("always", "unless_lurkbox", "quiet")
 DEFAULT_SETTINGS = {
     "enabled": True,
     "interval": 60,
     "source": "bell",
     "quiet": "always",
-    "sound": True,
+    "sound": "steam",
     # user_id -> {"login": str, "mode": "mute" | "force"}
     "overrides": {},
 }
@@ -115,7 +116,9 @@ def sanitize_settings(raw):
         s["source"] = raw["source"]
     if raw.get("quiet") in QUIET_MODES:
         s["quiet"] = raw["quiet"]
-    if isinstance(raw.get("sound"), bool):
+    if raw.get("sound") is False:  # up to 0.1.1 this was an on/off switch
+        s["sound"] = "none"
+    elif raw.get("sound") in SOUND_MODES:
         s["sound"] = raw["sound"]
     ov = raw.get("overrides")
     if isinstance(ov, dict):
